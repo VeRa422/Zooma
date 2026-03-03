@@ -3,287 +3,158 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>SCARAB'S CURSE: ADJECTIVES</title>
+<title>SCARAB'S CURSE: FULL QUEST</title>
 <style>
     @import url('https://fonts.googleapis.com/css2?family=Cinzel+Decorative:wght@700&family=Philosopher:wght@400;700&display=swap');
-
     body { margin:0; overflow:hidden; font-family: 'Philosopher', sans-serif; background:#000; }
-    
-    #game { 
-        width:100vw; height:100vh; position:relative; 
-        background: radial-gradient(circle, rgba(0,0,0,0.1) 0%, rgba(0,0,0,0.7) 100%),
-                    url("bg.png") center/cover no-repeat; 
-        display: none; 
-    }
-
-    /* Экраны теперь имеют z-index 1000, но overlayQuestion прозрачнее */
-    #overlayStart, #overlayQuestion, #overlayEnd, #overlayGameOver {
-        position:fixed; inset:0; background:rgba(0,0,0,0.9); 
-        display:flex; justify-content:center; align-items:center; flex-direction:column;
-        z-index:1000; color:#ffd700; text-align:center;
-    }
-
+    #game { width:100vw; height:100vh; position:relative; background: radial-gradient(circle, rgba(0,0,0,0.1) 0%, rgba(0,0,0,0.7) 100%), url("bg.png") center/cover no-repeat; display: none; }
+    #overlayStart, #overlayQuestion, #overlayEnd, #overlayGameOver { position:fixed; inset:0; background:rgba(0,0,0,0.9); display:flex; justify-content:center; align-items:center; flex-direction:column; z-index:1000; color:#ffd700; text-align:center; padding: 20px; }
     #overlayQuestion { background: rgba(0, 0, 0, 0.8); }
-
     #snakePath { position:absolute; width:100%; height:100%; z-index:1; opacity: 0.4; }
-    #frog { position:absolute; width:150px; height:150px; left: 50%; bottom: 10px; margin-left: -75px; z-index:100; cursor:pointer; filter: drop-shadow(0 0 15px gold); will-change: transform; }
-
-    .bonus-coin { filter: drop-shadow(0 0 20px #00ff00) brightness(1.5) !important; animation: bonusPulse 1s ease-in-out infinite alternate !important; }
-    .freeze-coin { filter: drop-shadow(0 0 20px #00d4ff) brightness(1.5) !important; animation: bonusPulse 0.8s ease-in-out infinite alternate !important; }
-    .frozen { filter: saturate(0.2) brightness(1.2) drop-shadow(0 0 10px #00d4ff) !important; opacity: 0.8; }
-
-    @keyframes bonusPulse { from { transform: translate(-50%, -50%) scale(1); } to { transform: translate(-50%, -50%) scale(1.2); } }
-
-    @keyframes triumphDance {
-        0% { transform: rotate(var(--last-rot)) scale(1); filter: drop-shadow(0 0 15px gold); }
-        50% { transform: rotate(calc(var(--last-rot) + 180deg)) scale(1.4); filter: drop-shadow(0 0 50px white); }
-        100% { transform: rotate(calc(var(--last-rot) + 360deg)) scale(1.5); filter: drop-shadow(0 0 20px gold); }
-    }
-    .frog-triumph { animation: triumphDance 1s ease-in-out infinite !important; }
-
-    .shake-error { animation: cursedShake 0.5s cubic-bezier(.36,.07,.19,.97) both !important; filter: drop-shadow(0 0 20px red) brightness(1.2) !important; }
-    @keyframes cursedShake { 10%, 90% { transform: translate3d(-2px, 0, 0) rotate(-1deg); } 20%, 80% { transform: translate3d(4px, 0, 0) rotate(2deg); } 30%, 50%, 70% { transform: translate3d(-6px, 0, 0) rotate(-3deg); } }
-
-    #hatch { position:absolute; width:130px; height:130px; transform:translate(-50%,-50%); z-index:5; filter: drop-shadow(0 0 10px rgba(255,215,0,0.5)); }
-    .ball { position:absolute; width:64px; height:64px; transform:translate(-50%,-50%); z-index:10; transition: filter 0.5s, opacity 0.5s; }
-    
+    #frog { position:absolute; width:150px; height:150px; left: 50%; bottom: 10px; margin-left: -75px; z-index:100; cursor:pointer; filter: drop-shadow(0 0 15px gold); transition: transform 0.1s; }
+    .ball { position:absolute; width:64px; height:64px; transform:translate(-50%,-50%); z-index:10; }
+    #hatch { position:absolute; width:130px; height:130px; transform:translate(-50%,-50%); z-index:5; filter: drop-shadow(0 0 10px gold); }
     #livesContainer { position: absolute; top: 20px; left: 30px; display: flex; gap: 15px; z-index: 100; }
     .ankh { width: 55px; height: 55px; filter: brightness(1.5) drop-shadow(0 0 12px #ffd700); transition: 0.4s; }
     .ankh.lost { transform: scale(0) rotate(90deg); opacity: 0; }
-
-    .gold-title { font-family: 'Cinzel Decorative'; font-size: 60px; text-shadow: 0 0 30px gold; margin-bottom: 20px; }
-    .answerBtn { background: linear-gradient(#4a3b0a, #1a1403); border: 2px solid #ffd700; padding:15px 40px; margin:10px; font-size:28px; cursor:pointer; color: #fff; border-radius:8px; width:340px; transition: 0.3s; }
+    .gold-title { font-family: 'Cinzel Decorative'; font-size: 50px; text-shadow: 0 0 30px gold; margin-bottom: 20px; }
+    .answerBtn { background: linear-gradient(#4a3b0a, #1a1403); border: 2px solid #ffd700; padding:15px 40px; margin:10px; font-size:24px; cursor:pointer; color: #fff; border-radius:8px; width:360px; transition: 0.3s; }
     .answerBtn:hover { background: #ffd700; color: #000; transform: scale(1.05); }
-
     #progressBar { position:absolute; top:25px; left:50%; transform:translateX(-50%); width:40%; height:20px; background: rgba(255,215,0,0.1); border: 2px solid #ffd700; border-radius:10px; overflow:hidden; z-index:50; }
     #progressFill { height:100%; width:0%; background: linear-gradient(to right, #b8860b, #ffd700); transition:width 0.3s; }
-    
-    #victoryFlash { position: fixed; inset: 0; background: white; z-index: 2000; opacity: 0; pointer-events: none; transition: opacity 0.4s; }
-    .particle { position: absolute; width: 10px; height: 10px; background: gold; border-radius: 50%; pointer-events: none; z-index: 1500; }
-    .shotBall { position:absolute; width:50px; height:50px; z-index:15; filter: brightness(1.2) drop-shadow(0 0 15px gold); }
+    .shotBall { position:absolute; width:50px; height:50px; z-index:150; filter: brightness(1.2) drop-shadow(0 0 15px gold); }
+    @keyframes triumphDance { 0% { transform: rotate(var(--last-rot)) scale(1); } 50% { transform: rotate(calc(var(--last-rot) + 180deg)) scale(1.4); } 100% { transform: rotate(calc(var(--last-rot) + 360deg)) scale(1.5); } }
+    .frog-triumph { animation: triumphDance 1s ease-in-out infinite !important; }
 </style>
 </head>
 <body>
-
-<div id="overlayStart">
-    <h1 class="gold-title">SCARAB'S CURSE</h1>
-    <button class="answerBtn" onclick="startGame()">BEGIN QUEST</button>
-</div>
-
-<div id="victoryFlash"></div>
-
+<div id="overlayStart"><h1 class="gold-title">SCARAB'S QUEST</h1><button class="answerBtn" onclick="startGame()">BEGIN</button></div>
 <div id="game">
     <canvas id="snakePath"></canvas>
-    <div id="livesContainer">
-        <img src="2.png" class="ankh" id="h1"><img src="2.png" class="ankh" id="h2"><img src="2.png" class="ankh" id="h3">
-    </div>
+    <div id="livesContainer"><img src="2.png" class="ankh" id="h1"><img src="2.png" class="ankh" id="h2"><img src="2.png" class="ankh" id="h3"></div>
     <div id="progressBar"><div id="progressFill"></div></div>
-    <div id="frogWrapper" style="position:absolute; bottom:10px; left:50%; width:150px; height:150px; margin-left:-75px; z-index:100;">
-        <img src="1.png" id="frog">
-    </div>
+    <div id="frogWrapper" style="position:absolute; bottom:10px; left:50%; width:150px; height:150px; margin-left:-75px; z-index:100;"><img src="1.png" id="frog"></div>
     <img src="3.png" id="hatch">
-
-    <div id="overlayQuestion" style="display:none;">
-        <h1 class="gold-title" id="qText" style="font-size:32px;"></h1>
-        <div id="answers"></div>
-    </div>
-    
-    <div id="overlayEnd" style="display:none;">
-        <h1 class="gold-title">VICTORY!</h1>
-        <button class="answerBtn" onclick="location.reload()">PLAY AGAIN</button>
-    </div>
-    
-    <div id="overlayGameOver" style="display:none;">
-        <h1 class="gold-title" style="color: #ff4500;">GAME OVER</h1>
-        <button class="answerBtn" onclick="location.reload()">TRY AGAIN</button>
-    </div>
+    <div id="overlayQuestion" style="display:none;"><h1 class="gold-title" id="qText" style="font-size:28px; padding:0 20px;"></h1><div id="answers"></div></div>
+    <div id="overlayEnd" style="display:none;"><h1 class="gold-title">PHARAOH'S VICTORY!</h1><button class="answerBtn" onclick="location.reload()">PLAY AGAIN</button></div>
+    <div id="overlayGameOver" style="display:none;"><h1 class="gold-title" style="color: #ff4500;">CURSED!</h1><button class="answerBtn" onclick="location.reload()">TRY AGAIN</button></div>
 </div>
-
 <script>
 const sndShot = new Audio('1.mp3'), sndWrong = new Audio('2.mp3'), sndCorrect = new Audio('3.mp3'), sndWin = new Audio('4.mp3'), sndGameOver = new Audio('5.mp3');
-
-let gameStarted = false, gameActive = true, errors = 0, isFrozen = false, isPausedForQuestion = false;
+let gameStarted = false, gameActive = true, errors = 0, isPausedForQuestion = false;
 const MAX_ERRORS = 3, SNAKE_SIZE = 15, MIN_DIST = 55, BASE_SPEED = 0.5;
 
-const COIN_VARIATIONS = ["4.png", "5.png", "6.png", "7.png", "8.png", "9.png", "10.png"];
+// ТВОЙ ПОЛНЫЙ СПИСОК ИЗ 12 ВОПРОСОВ
 const QUESTIONS_POOL = [
     {q: "The Sun is ______ than the Moon.", c: "brighter", w: ["bright", "the brightest"]},
     {q: "Apophis is the ______ snake.", c: "most dangerous", w: ["dangerous", "more dangerous"]},
     {q: "Ra's magic is ______ than any curse.", c: "stronger", w: ["strong", "strongest"]},
     {q: "Ancient Egypt is ______ than Rome.", c: "older", w: ["old", "oldest"]},
-    {q: "You are the ______ hero of the Nile!", c: "bravest", w: ["brave", "braver"]}
+    {q: "You are the ______ hero of the Nile!", c: "bravest", w: ["brave", "braver"]},
+    {q: "Gold is ______ than sand.", c: "heavier", w: ["heavy", "heaviest"]},
+    {q: "The Sphinx is ______ than a cat.", c: "bigger", w: ["big", "biggest"]},
+    {q: "The Nile is the ______ river.", c: "longest", w: ["long", "longer"]},
+    {q: "This pyramid is ______ than that house.", c: "taller", w: ["tall", "the tallest"]},
+    {q: "Summer in Egypt is ______ than in London.", c: "hotter", w: ["hot", "the hottest"]},
+    {q: "An elephant is ______ than a scarab.", c: "larger", w: ["large", "largest"]},
+    {q: "The desert is ______ than the forest.", c: "drier", w: ["dry", "driest"]}
 ];
+let currentQuestions = [...QUESTIONS_POOL];
 
 const game = document.getElementById("game"), frog = document.getElementById("frog"), hatch = document.getElementById("hatch"), canvas = document.getElementById("snakePath"), ctx = canvas.getContext("2d");
-let W = window.innerWidth, H = window.innerHeight;
-canvas.width = W; canvas.height = H;
-
-let path = [], snake = [];
+let W = window.innerWidth, H = window.innerHeight, path = [], snake = [];
 
 function drawTrack() {
-    ctx.clearRect(0,0,W,H);
-    ctx.beginPath(); ctx.strokeStyle = "rgba(255, 215, 0, 0.3)"; ctx.lineWidth = 45;
-    path = [];
+    canvas.width = W; canvas.height = H; ctx.clearRect(0,0,W,H); ctx.beginPath(); ctx.strokeStyle = "rgba(255, 215, 0, 0.3)"; ctx.lineWidth = 45; path = [];
     for (let t = 0; t <= 1; t += 0.001) {
         let x = W * 0.1 + (W * 0.8) * t, y = H * 0.4 + Math.sin(t * Math.PI * 2.5) * (H * 0.25);
-        path.push({ x, y });
-        if (t === 0) ctx.moveTo(x, y); else ctx.lineTo(x, y);
+        path.push({ x, y }); if (t === 0) ctx.moveTo(x, y); else ctx.lineTo(x, y);
     }
-    ctx.stroke();
-    const lastP = path[path.length - 1];
-    hatch.style.left = lastP.x + "px"; hatch.style.top = lastP.y + "px";
+    ctx.stroke(); const lastP = path[path.length - 1]; hatch.style.left = lastP.x + "px"; hatch.style.top = lastP.y + "px";
 }
 
 function startGame() {
-    [sndShot, sndWrong, sndCorrect, sndWin, sndGameOver].forEach(s => {
-        s.play().then(() => { s.pause(); s.currentTime = 0; }).catch(() => {});
-    });
-    document.getElementById("overlayStart").style.display = "none";
-    game.style.display = "block";
-    gameStarted = true;
-    drawTrack();
+    [sndShot, sndWrong, sndCorrect, sndWin, sndGameOver].forEach(s => { s.play().then(()=>s.pause()); });
+    document.getElementById("overlayStart").style.display = "none"; game.style.display = "block"; drawTrack();
     for (let i = 0; i < SNAKE_SIZE; i++) {
-        let e = document.createElement("img");
-        e.src = COIN_VARIATIONS[Math.floor(Math.random() * COIN_VARIATIONS.length)];
-        e.className = "ball";
-        let type = "normal";
-        let rand = Math.random();
-        if (i > 4 && rand < 0.15) { type = "freeze"; e.classList.add("freeze-coin"); }
-        else if (i > 4 && rand < 0.30) { type = "bonus"; e.classList.add("bonus-coin"); }
-        game.appendChild(e);
-        snake.push({ pos: -i * MIN_DIST, el: e, type: type });
+        let e = document.createElement("img"); e.src = (i % 7 + 4) + ".png"; e.className = "ball";
+        game.appendChild(e); snake.push({ pos: -i * MIN_DIST, el: e });
     }
-    move();
+    gameStarted = true; move();
 }
 
 function move() {
     if (!gameStarted) return;
     let allGone = true;
-    let moveStep = (isPausedForQuestion || isFrozen) ? 0 : (gameActive ? BASE_SPEED : BASE_SPEED * 25);
-
+    let moveStep = isPausedForQuestion ? 0 : (gameActive ? BASE_SPEED : BASE_SPEED * 25);
     snake.forEach((s, i) => {
-        if (i === 0) s.pos += moveStep;
-        else s.pos += ((snake[i-1].pos - MIN_DIST) - s.pos) * 0.2;
-        
+        if (i === 0) s.pos += moveStep; else s.pos += ((snake[i-1].pos - MIN_DIST) - s.pos) * 0.2;
         if (s.pos < path.length - 1) {
-            if (s.pos > 0) {
-                allGone = false;
-                let p = path[Math.floor(s.pos)];
-                if (p) { s.el.style.left = p.x + "px"; s.el.style.top = p.y + "px"; }
-            }
-        } else { s.el.style.display = "none"; }
+            if (s.pos > 0) { allGone = false; let p = path[Math.floor(s.pos)]; s.el.style.left = p.x + "px"; s.el.style.top = p.y + "px"; }
+        } else s.el.style.display = "none";
     });
-
     if (gameActive && snake.length > 0) {
         if (snake[0].pos >= path.length - 1) triggerGameOver();
         let leadCoin = snake.find(s => s.pos > 0) || snake[0];
         const rect = frog.getBoundingClientRect(), centerX = rect.left + rect.width / 2, centerY = rect.top + rect.height / 2;
         const tx = parseFloat(leadCoin.el.style.left) || 0, ty = parseFloat(leadCoin.el.style.top) || 0;
-        const angle = Math.atan2(ty - centerY, tx - centerX);
-        frog.style.transform = `rotate(${angle * (180 / Math.PI) + 90}deg)`;
+        frog.style.transform = `rotate(${Math.atan2(ty - centerY, tx - centerX) * (180 / Math.PI) + 90}deg)`;
     }
-
-    if (!gameActive && allGone && errors >= MAX_ERRORS) { 
-        sndGameOver.pause(); sndGameOver.currentTime = 0;
-        document.getElementById("overlayGameOver").style.display = "flex"; 
-        return; 
-    }
+    if (!gameActive && allGone && errors >= MAX_ERRORS) { sndGameOver.pause(); document.getElementById("overlayGameOver").style.display = "flex"; return; }
     requestAnimationFrame(move);
-}
-
-function triggerGameOver() { 
-    if (!gameActive) return; 
-    gameActive = false; isFrozen = false; 
-    snake.forEach(s => s.el.classList.remove("frozen"));
-    sndGameOver.play(); 
 }
 
 frog.onclick = () => {
     if (!gameActive || isPausedForQuestion) return;
-    sndShot.play();
-    isPausedForQuestion = true;
-    let q = QUESTIONS_POOL[Math.floor(Math.random()*QUESTIONS_POOL.length)];
+    sndShot.play(); isPausedForQuestion = true;
+    if (currentQuestions.length === 0) currentQuestions = [...QUESTIONS_POOL];
+    let qIdx = Math.floor(Math.random() * currentQuestions.length);
+    let q = currentQuestions.splice(qIdx, 1)[0];
     const overlayQ = document.getElementById("overlayQuestion");
-    overlayQ.style.display = "flex";
-    document.getElementById("qText").textContent = q.q;
-    const container = document.getElementById("answers");
-    container.innerHTML = "";
+    overlayQ.style.display = "flex"; document.getElementById("qText").textContent = q.q;
+    const container = document.getElementById("answers"); container.innerHTML = "";
     [q.c, ...q.w].sort(() => Math.random() - 0.5).forEach(a => {
-        let btn = document.createElement("button");
-        btn.className = "answerBtn"; btn.textContent = a;
+        let btn = document.createElement("button"); btn.className = "answerBtn"; btn.textContent = a;
         btn.onclick = () => {
-            overlayQ.style.display = "none";
-            isPausedForQuestion = false;
-            if (a === q.c) { sndCorrect.play(); shoot(false); }
-            else { sndWrong.play(); handleError(); shoot(true); }
+            overlayQ.style.display = "none"; isPausedForQuestion = false;
+            if (a === q.c) { sndCorrect.play(); shoot(false); } else { sndWrong.play(); handleError(); shoot(true); }
         };
         container.appendChild(btn);
     });
 };
 
-function handleError() {
-    errors++;
-    const heart = document.getElementById("h" + (4 - errors));
-    if (heart) heart.classList.add("lost");
-    frog.classList.add("shake-error");
-    setTimeout(() => frog.classList.remove("shake-error"), 500);
-    if (errors >= MAX_ERRORS) triggerGameOver();
-}
+function triggerGameOver() { if(!gameActive) return; gameActive = false; sndGameOver.play(); }
+function handleError() { errors++; const h = document.getElementById("h" + (4 - errors)); if (h) h.classList.add("lost"); if (errors >= MAX_ERRORS) triggerGameOver(); }
 
 function shoot(isMiss) {
     const ball = document.createElement("img");
     let targetIdx = snake.findIndex(s => s.pos > 0);
     if (targetIdx === -1) targetIdx = 0;
     if (isMiss) targetIdx = Math.min(targetIdx + 2, snake.length - 1);
-    ball.src = COIN_VARIATIONS[0]; ball.className = "shotBall";
+    ball.src = "4.png"; ball.className = "shotBall";
     const fRect = frog.getBoundingClientRect();
-    ball.style.left = (fRect.left + fRect.width/2 - 25) + "px";
-    ball.style.top = (fRect.top + fRect.height/2 - 25) + "px";
+    ball.style.left = (fRect.left + fRect.width/2 - 25) + "px"; ball.style.top = (fRect.top + fRect.height/2 - 25) + "px";
     game.appendChild(ball);
-    let tx = parseFloat(snake[targetIdx].el.style.left) || W/2, ty = parseFloat(snake[targetIdx].el.style.top) || H/2;
-
+    let targetEl = snake[targetIdx].el;
+    let tx = parseFloat(targetEl.style.left), ty = parseFloat(targetEl.style.top);
     ball.animate([{ left: ball.style.left, top: ball.style.top }, { left: tx + "px", top: ty + "px" }], 400).onfinish = () => {
         ball.remove();
         if (!isMiss && snake.length > 0) {
-            let hit = snake[targetIdx];
-            if (hit.type === "bonus" && errors > 0) {
-                document.getElementById("h" + (4 - errors)).classList.remove("lost");
-                errors--;
-            } else if (hit.type === "freeze") applyFreeze();
-            hit.el.remove();
-            snake.splice(targetIdx, 1);
+            snake[targetIdx].el.remove(); snake.splice(targetIdx, 1);
             document.getElementById("progressFill").style.width = ((SNAKE_SIZE - snake.length)/SNAKE_SIZE * 100) + "%";
             if (snake.length === 0) finishGame();
         }
     };
 }
 
-function applyFreeze() {
-    isFrozen = true; snake.forEach(s => s.el.classList.add("frozen"));
-    setTimeout(() => { isFrozen = false; snake.forEach(s => s.el.classList.remove("frozen")); }, 3000);
-}
-
 function finishGame() {
     gameActive = false;
     const currentRot = frog.style.transform.replace(/[^0-9.-]/g, '') || 0;
     frog.style.setProperty('--last-rot', currentRot + 'deg');
-    frog.classList.add("frog-triumph");
-    const flash = document.getElementById("victoryFlash");
-    flash.style.opacity = "0.7";
-    setTimeout(() => flash.style.opacity = "0", 400);
-    for(let i=0; i<80; i++) setTimeout(() => createParticle(), i * 15);
-    sndWin.play();
+    frog.classList.add("frog-triumph"); sndWin.play();
     setTimeout(() => { document.getElementById("overlayEnd").style.display = "flex"; }, 2500);
 }
-
-function createParticle() {
-    const p = document.createElement("div"); p.className = "particle"; p.style.left = "50%"; p.style.top = "70%";
-    game.appendChild(p);
-    const angle = Math.random() * Math.PI * 2, dist = 100 + Math.random() * 400;
-    p.animate([{ transform: 'translate(0,0) scale(1)', opacity: 1 }, { transform: `translate(${Math.cos(angle)*dist}px, ${Math.sin(angle)*dist}px) scale(0)`, opacity: 0 }], 1500).onfinish = () => p.remove();
-}
-
-window.addEventListener('resize', () => { W = window.innerWidth; H = window.innerHeight; canvas.width = W; canvas.height = H; if(gameStarted) drawTrack(); });
+window.addEventListener('resize', () => { W = window.innerWidth; H = window.innerHeight; drawTrack(); });
 </script>
 </body>
 </html>
