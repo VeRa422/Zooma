@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>SCARAB'S CURSE: THE TREASURY REVEALED</title>
+<title>SCARAB'S CURSE: ADJECTIVES</title>
 <style>
     @import url('https://fonts.googleapis.com/css2?family=Cinzel+Decorative:wght@700&family=Philosopher:wght@400;700&display=swap');
 
@@ -11,57 +11,54 @@
     
     #game { 
         width:100vw; height:100vh; position:relative; 
-        background: radial-gradient(circle, rgba(0,0,0,0.2) 0%, rgba(0,0,0,0.8) 100%),
+        background: radial-gradient(circle, rgba(0,0,0,0.1) 0%, rgba(0,0,0,0.7) 100%),
                     url("bg.png") center/cover no-repeat; 
         display: none; 
     }
 
+    /* Экраны теперь имеют z-index 1000, но overlayQuestion прозрачнее */
     #overlayStart, #overlayQuestion, #overlayEnd, #overlayGameOver {
-        position:fixed; inset:0; background:rgba(0,0,0,0.95); 
+        position:fixed; inset:0; background:rgba(0,0,0,0.9); 
         display:flex; justify-content:center; align-items:center; flex-direction:column;
-        z-index:2000; color:#ffd700; text-align:center; padding: 20px;
+        z-index:1000; color:#ffd700; text-align:center;
     }
 
-    /* Игровые слои */
-    #snakePath { position:absolute; inset:0; z-index:5; opacity: 0.6; pointer-events: none; }
-    #hatch { position:absolute; width:130px; height:130px; transform:translate(-50%,-50%); z-index:6; filter: drop-shadow(0 0 15px #ffd700); }
-    .ball { position:absolute; width:64px; height:64px; transform:translate(-50%,-50%); z-index:15; transition: filter 0.3s; }
-    
-    #frogWrapper { position:absolute; bottom:10px; left:50%; width:150px; height:150px; margin-left:-75px; z-index:100; }
-    #frog { width:150px; height:150px; cursor:pointer; filter: drop-shadow(0 0 15px gold); will-change: transform; }
+    #overlayQuestion { background: rgba(0, 0, 0, 0.8); }
 
-    /* Эффекты монет */
+    #snakePath { position:absolute; width:100%; height:100%; z-index:1; opacity: 0.4; }
+    #frog { position:absolute; width:150px; height:150px; left: 50%; bottom: 10px; margin-left: -75px; z-index:100; cursor:pointer; filter: drop-shadow(0 0 15px gold); will-change: transform; }
+
     .bonus-coin { filter: drop-shadow(0 0 20px #00ff00) brightness(1.5) !important; animation: bonusPulse 1s ease-in-out infinite alternate !important; }
     .freeze-coin { filter: drop-shadow(0 0 20px #00d4ff) brightness(1.5) !important; animation: bonusPulse 0.8s ease-in-out infinite alternate !important; }
     .frozen { filter: saturate(0.2) brightness(1.2) drop-shadow(0 0 10px #00d4ff) !important; opacity: 0.8; }
 
     @keyframes bonusPulse { from { transform: translate(-50%, -50%) scale(1); } to { transform: translate(-50%, -50%) scale(1.2); } }
 
-    /* Анимации скарабея */
     @keyframes triumphDance {
-        0% { transform: rotate(var(--last-rot)) scale(1); }
-        50% { transform: rotate(calc(var(--last-rot) + 180deg)) scale(1.4); }
-        100% { transform: rotate(calc(var(--last-rot) + 360deg)) scale(1.5); }
+        0% { transform: rotate(var(--last-rot)) scale(1); filter: drop-shadow(0 0 15px gold); }
+        50% { transform: rotate(calc(var(--last-rot) + 180deg)) scale(1.4); filter: drop-shadow(0 0 50px white); }
+        100% { transform: rotate(calc(var(--last-rot) + 360deg)) scale(1.5); filter: drop-shadow(0 0 20px gold); }
     }
     .frog-triumph { animation: triumphDance 1s ease-in-out infinite !important; }
 
-    .shake-error { animation: cursedShake 0.5s cubic-bezier(.36,.07,.19,.97) both !important; filter: drop-shadow(0 0 20px red) !important; }
-    @keyframes cursedShake { 10%, 90% { transform: translate3d(-2px, 0, 0); } 20%, 80% { transform: translate3d(4px, 0, 0); } }
+    .shake-error { animation: cursedShake 0.5s cubic-bezier(.36,.07,.19,.97) both !important; filter: drop-shadow(0 0 20px red) brightness(1.2) !important; }
+    @keyframes cursedShake { 10%, 90% { transform: translate3d(-2px, 0, 0) rotate(-1deg); } 20%, 80% { transform: translate3d(4px, 0, 0) rotate(2deg); } 30%, 50%, 70% { transform: translate3d(-6px, 0, 0) rotate(-3deg); } }
 
-    /* Интерфейс */
-    #livesContainer { position: absolute; top: 20px; left: 30px; display: flex; gap: 15px; z-index: 150; }
-    .ankh { width: 55px; height: 55px; filter: brightness(1.5) drop-shadow(0 0 12px #ffd700); transition: 0.4s; }
-    .ankh.lost { transform: scale(0); opacity: 0; }
-
-    #progressBar { position:absolute; top:25px; left:50%; transform:translateX(-50%); width:40%; height:20px; background: rgba(0,0,0,0.5); border: 2px solid #ffd700; border-radius:10px; overflow:hidden; z-index:150; }
-    #progressFill { height:100%; width:0%; background: linear-gradient(to right, #b8860b, #ffd700); transition:width 0.3s; }
+    #hatch { position:absolute; width:130px; height:130px; transform:translate(-50%,-50%); z-index:5; filter: drop-shadow(0 0 10px rgba(255,215,0,0.5)); }
+    .ball { position:absolute; width:64px; height:64px; transform:translate(-50%,-50%); z-index:10; transition: filter 0.5s, opacity 0.5s; }
     
-    .gold-title { font-family: 'Cinzel Decorative'; font-size: 48px; text-shadow: 0 0 30px gold; margin-bottom: 20px; }
-    .answerBtn { background: linear-gradient(#4a3b0a, #1a1403); border: 2px solid #ffd700; padding:15px 40px; margin:10px; font-size:24px; cursor:pointer; color: #fff; border-radius:8px; width:340px; transition: 0.3s; font-family: 'Philosopher'; }
+    #livesContainer { position: absolute; top: 20px; left: 30px; display: flex; gap: 15px; z-index: 100; }
+    .ankh { width: 55px; height: 55px; filter: brightness(1.5) drop-shadow(0 0 12px #ffd700); transition: 0.4s; }
+    .ankh.lost { transform: scale(0) rotate(90deg); opacity: 0; }
+
+    .gold-title { font-family: 'Cinzel Decorative'; font-size: 60px; text-shadow: 0 0 30px gold; margin-bottom: 20px; }
+    .answerBtn { background: linear-gradient(#4a3b0a, #1a1403); border: 2px solid #ffd700; padding:15px 40px; margin:10px; font-size:28px; cursor:pointer; color: #fff; border-radius:8px; width:340px; transition: 0.3s; }
     .answerBtn:hover { background: #ffd700; color: #000; transform: scale(1.05); }
 
-    /* Визуальные эффекты стрельбы и победы */
-    #victoryFlash { position: fixed; inset: 0; background: white; z-index: 3000; opacity: 0; pointer-events: none; transition: opacity 0.4s; }
+    #progressBar { position:absolute; top:25px; left:50%; transform:translateX(-50%); width:40%; height:20px; background: rgba(255,215,0,0.1); border: 2px solid #ffd700; border-radius:10px; overflow:hidden; z-index:50; }
+    #progressFill { height:100%; width:0%; background: linear-gradient(to right, #b8860b, #ffd700); transition:width 0.3s; }
+    
+    #victoryFlash { position: fixed; inset: 0; background: white; z-index: 2000; opacity: 0; pointer-events: none; transition: opacity 0.4s; }
     .particle { position: absolute; width: 10px; height: 10px; background: gold; border-radius: 50%; pointer-events: none; z-index: 1500; }
     .shotBall { position:absolute; width:50px; height:50px; z-index:15; filter: brightness(1.2) drop-shadow(0 0 15px gold); }
 </style>
@@ -69,8 +66,7 @@
 <body>
 
 <div id="overlayStart">
-    <h1 class="gold-title">THE FINAL SEAL</h1>
-    <p style="font-size:24px; color:#fff;">Protect the Artifacts of Ra!</p>
+    <h1 class="gold-title">SCARAB'S CURSE</h1>
     <button class="answerBtn" onclick="startGame()">BEGIN QUEST</button>
 </div>
 
@@ -78,59 +74,55 @@
 
 <div id="game">
     <canvas id="snakePath"></canvas>
-    <img src="3.png" id="hatch">
-    
     <div id="livesContainer">
         <img src="2.png" class="ankh" id="h1"><img src="2.png" class="ankh" id="h2"><img src="2.png" class="ankh" id="h3">
     </div>
     <div id="progressBar"><div id="progressFill"></div></div>
-    <div id="frogWrapper"><img src="1.png" id="frog"></div>
+    <div id="frogWrapper" style="position:absolute; bottom:10px; left:50%; width:150px; height:150px; margin-left:-75px; z-index:100;">
+        <img src="1.png" id="frog">
+    </div>
+    <img src="3.png" id="hatch">
 
     <div id="overlayQuestion" style="display:none;">
-        <div id="qText" style="font-size: 32px; color: #fff; margin-bottom: 30px; font-weight: bold; text-shadow: 2px 2px 4px #000;"></div>
+        <h1 class="gold-title" id="qText" style="font-size:32px;"></h1>
         <div id="answers"></div>
     </div>
-
+    
     <div id="overlayEnd" style="display:none;">
-        <h1 class="gold-title">THE SUN RISES!</h1>
-        <p style="font-size:20px; color:#fff; max-width:600px; margin-bottom:20px;">The curse is shattered! The Treasury is safe.</p>
-        <button class="answerBtn" onclick="location.reload()">CLAIM REWARD</button>
+        <h1 class="gold-title">VICTORY!</h1>
+        <button class="answerBtn" onclick="location.reload()">PLAY AGAIN</button>
     </div>
-
+    
     <div id="overlayGameOver" style="display:none;">
-        <h1 class="gold-title" style="color: #ff4500;">CURSED BY GOLD</h1>
+        <h1 class="gold-title" style="color: #ff4500;">GAME OVER</h1>
         <button class="answerBtn" onclick="location.reload()">TRY AGAIN</button>
     </div>
 </div>
 
 <script>
-// Аудио ресурсы
 const sndShot = new Audio('1.mp3'), sndWrong = new Audio('2.mp3'), sndCorrect = new Audio('3.mp3'), sndWin = new Audio('4.mp3'), sndGameOver = new Audio('5.mp3');
 
-// Глобальное состояние
 let gameStarted = false, gameActive = true, errors = 0, isFrozen = false, isPausedForQuestion = false;
-const MAX_ERRORS = 3, SNAKE_SIZE = 15, MIN_DIST = 50, BASE_SPEED = 0.5;
+const MAX_ERRORS = 3, SNAKE_SIZE = 15, MIN_DIST = 55, BASE_SPEED = 0.5;
 
 const COIN_VARIATIONS = ["4.png", "5.png", "6.png", "7.png", "8.png", "9.png", "10.png"];
 const QUESTIONS_POOL = [
-    {q: "40", c: "forty", w: ["fourty", "fourteen"]},
-    {q: "90", c: "ninety", w: ["nineteen", "ninty"]},
-    {q: "50", c: "fifty", w: ["fivety", "fifteen"]},
     {q: "The Sun is ______ than the Moon.", c: "brighter", w: ["bright", "the brightest"]},
+    {q: "Apophis is the ______ snake.", c: "most dangerous", w: ["dangerous", "more dangerous"]},
     {q: "Ra's magic is ______ than any curse.", c: "stronger", w: ["strong", "strongest"]},
-    {q: "This is ___ ancient relic.", c: "an", w: ["a", "the"]}
+    {q: "Ancient Egypt is ______ than Rome.", c: "older", w: ["old", "oldest"]},
+    {q: "You are the ______ hero of the Nile!", c: "bravest", w: ["brave", "braver"]}
 ];
-let questionsLeft = [...QUESTIONS_POOL];
 
-// Инициализация Canvas
 const game = document.getElementById("game"), frog = document.getElementById("frog"), hatch = document.getElementById("hatch"), canvas = document.getElementById("snakePath"), ctx = canvas.getContext("2d");
-let W, H, path = [], snake = [];
+let W = window.innerWidth, H = window.innerHeight;
+canvas.width = W; canvas.height = H;
+
+let path = [], snake = [];
 
 function drawTrack() {
-    W = window.innerWidth; H = window.innerHeight;
-    canvas.width = W; canvas.height = H;
     ctx.clearRect(0,0,W,H);
-    ctx.beginPath(); ctx.strokeStyle = "rgba(255, 215, 0, 0.4)"; ctx.lineWidth = 45; ctx.lineCap = "round";
+    ctx.beginPath(); ctx.strokeStyle = "rgba(255, 215, 0, 0.3)"; ctx.lineWidth = 45;
     path = [];
     for (let t = 0; t <= 1; t += 0.001) {
         let x = W * 0.1 + (W * 0.8) * t, y = H * 0.4 + Math.sin(t * Math.PI * 2.5) * (H * 0.25);
@@ -143,15 +135,13 @@ function drawTrack() {
 }
 
 function startGame() {
-    // Разблокировка аудио для браузеров
     [sndShot, sndWrong, sndCorrect, sndWin, sndGameOver].forEach(s => {
         s.play().then(() => { s.pause(); s.currentTime = 0; }).catch(() => {});
     });
-
     document.getElementById("overlayStart").style.display = "none";
     game.style.display = "block";
+    gameStarted = true;
     drawTrack();
-
     for (let i = 0; i < SNAKE_SIZE; i++) {
         let e = document.createElement("img");
         e.src = COIN_VARIATIONS[Math.floor(Math.random() * COIN_VARIATIONS.length)];
@@ -159,23 +149,20 @@ function startGame() {
         let type = "normal";
         let rand = Math.random();
         if (i > 4 && rand < 0.15) { type = "freeze"; e.classList.add("freeze-coin"); }
-        else if (i > 4 && rand < 0.25) { type = "bonus"; e.classList.add("bonus-coin"); }
+        else if (i > 4 && rand < 0.30) { type = "bonus"; e.classList.add("bonus-coin"); }
         game.appendChild(e);
         snake.push({ pos: -i * MIN_DIST, el: e, type: type });
     }
-    gameStarted = true;
     move();
 }
 
 function move() {
     if (!gameStarted) return;
     let allGone = true;
-    
-    // ЛОГИКА ОСТАНОВКИ: 0 если пауза для вопроса или заморозка
-    let currentStep = (isPausedForQuestion || (isFrozen && gameActive)) ? 0 : (gameActive ? BASE_SPEED : BASE_SPEED * 25);
+    let moveStep = (isPausedForQuestion || isFrozen) ? 0 : (gameActive ? BASE_SPEED : BASE_SPEED * 25);
 
     snake.forEach((s, i) => {
-        if (i === 0) s.pos += currentStep;
+        if (i === 0) s.pos += moveStep;
         else s.pos += ((snake[i-1].pos - MIN_DIST) - s.pos) * 0.2;
         
         if (s.pos < path.length - 1) {
@@ -189,8 +176,6 @@ function move() {
 
     if (gameActive && snake.length > 0) {
         if (snake[0].pos >= path.length - 1) triggerGameOver();
-        
-        // Поворот скарабея к первой монете на пути
         let leadCoin = snake.find(s => s.pos > 0) || snake[0];
         const rect = frog.getBoundingClientRect(), centerX = rect.left + rect.width / 2, centerY = rect.top + rect.height / 2;
         const tx = parseFloat(leadCoin.el.style.left) || 0, ty = parseFloat(leadCoin.el.style.top) || 0;
@@ -198,7 +183,8 @@ function move() {
         frog.style.transform = `rotate(${angle * (180 / Math.PI) + 90}deg)`;
     }
 
-    if (!gameActive && allGone) { 
+    if (!gameActive && allGone && errors >= MAX_ERRORS) { 
+        sndGameOver.pause(); sndGameOver.currentTime = 0;
         document.getElementById("overlayGameOver").style.display = "flex"; 
         return; 
     }
@@ -215,24 +201,19 @@ function triggerGameOver() {
 frog.onclick = () => {
     if (!gameActive || isPausedForQuestion) return;
     sndShot.play();
-    isPausedForQuestion = true; // ОСТАНОВКА
-
-    if (questionsLeft.length === 0) questionsLeft = [...QUESTIONS_POOL];
-    const qIdx = Math.floor(Math.random() * questionsLeft.length);
-    const q = questionsLeft.splice(qIdx, 1)[0];
-
+    isPausedForQuestion = true;
+    let q = QUESTIONS_POOL[Math.floor(Math.random()*QUESTIONS_POOL.length)];
     const overlayQ = document.getElementById("overlayQuestion");
     overlayQ.style.display = "flex";
     document.getElementById("qText").textContent = q.q;
     const container = document.getElementById("answers");
     container.innerHTML = "";
-
     [q.c, ...q.w].sort(() => Math.random() - 0.5).forEach(a => {
         let btn = document.createElement("button");
         btn.className = "answerBtn"; btn.textContent = a;
         btn.onclick = () => {
             overlayQ.style.display = "none";
-            isPausedForQuestion = false; // ЗАПУСК
+            isPausedForQuestion = false;
             if (a === q.c) { sndCorrect.play(); shoot(false); }
             else { sndWrong.play(); handleError(); shoot(true); }
         };
@@ -251,16 +232,16 @@ function handleError() {
 
 function shoot(isMiss) {
     const ball = document.createElement("img");
-    let targetIdx = Math.max(0, snake.findIndex(s => s.pos > 0));
+    let targetIdx = snake.findIndex(s => s.pos > 0);
+    if (targetIdx === -1) targetIdx = 0;
     if (isMiss) targetIdx = Math.min(targetIdx + 2, snake.length - 1);
-    
     ball.src = COIN_VARIATIONS[0]; ball.className = "shotBall";
     const fRect = frog.getBoundingClientRect();
     ball.style.left = (fRect.left + fRect.width/2 - 25) + "px";
     ball.style.top = (fRect.top + fRect.height/2 - 25) + "px";
     game.appendChild(ball);
-    
     let tx = parseFloat(snake[targetIdx].el.style.left) || W/2, ty = parseFloat(snake[targetIdx].el.style.top) || H/2;
+
     ball.animate([{ left: ball.style.left, top: ball.style.top }, { left: tx + "px", top: ty + "px" }], 400).onfinish = () => {
         ball.remove();
         if (!isMiss && snake.length > 0) {
@@ -269,7 +250,6 @@ function shoot(isMiss) {
                 document.getElementById("h" + (4 - errors)).classList.remove("lost");
                 errors--;
             } else if (hit.type === "freeze") applyFreeze();
-            
             hit.el.remove();
             snake.splice(targetIdx, 1);
             document.getElementById("progressFill").style.width = ((SNAKE_SIZE - snake.length)/SNAKE_SIZE * 100) + "%";
@@ -288,10 +268,9 @@ function finishGame() {
     const currentRot = frog.style.transform.replace(/[^0-9.-]/g, '') || 0;
     frog.style.setProperty('--last-rot', currentRot + 'deg');
     frog.classList.add("frog-triumph");
-    
     const flash = document.getElementById("victoryFlash");
-    flash.style.opacity = "0.7"; setTimeout(() => flash.style.opacity = "0", 400);
-    
+    flash.style.opacity = "0.7";
+    setTimeout(() => flash.style.opacity = "0", 400);
     for(let i=0; i<80; i++) setTimeout(() => createParticle(), i * 15);
     sndWin.play();
     setTimeout(() => { document.getElementById("overlayEnd").style.display = "flex"; }, 2500);
@@ -304,7 +283,7 @@ function createParticle() {
     p.animate([{ transform: 'translate(0,0) scale(1)', opacity: 1 }, { transform: `translate(${Math.cos(angle)*dist}px, ${Math.sin(angle)*dist}px) scale(0)`, opacity: 0 }], 1500).onfinish = () => p.remove();
 }
 
-window.addEventListener('resize', drawTrack);
+window.addEventListener('resize', () => { W = window.innerWidth; H = window.innerHeight; canvas.width = W; canvas.height = H; if(gameStarted) drawTrack(); });
 </script>
 </body>
 </html>
